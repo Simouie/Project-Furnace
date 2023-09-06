@@ -32,11 +32,22 @@ def transfer_material_flags(material, obj):
 
 
 def set_object_properties(obj):
+
+    # check if the object has properties set up and used by Foundry
+    # do not proceed if those are not there for some reason
     
     if not obj.get("nwo"): return
 
+    # directly set values for properties that need to be set for portals
+    # without actually interacting with Foundry UI in the same way users do 
+
     set_default_values(obj.nwo)
 
+    # transfer flags used for Halo materials to object properties
+    # each portal should be using one material but there might be empty slots or unused slots
+    # the final result might be incorrect if there actually are multiple materials being used
+    # that is not normal for Halo so fixing that shall be the responsibility of the user
+    
     for slot in obj.material_slots:
         if slot.material.name.startswith("+portal"):
             if not slot.material.get("ass_jms"): continue
