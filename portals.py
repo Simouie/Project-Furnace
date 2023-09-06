@@ -8,8 +8,8 @@ def set_default_values(obj):
     obj.object_type_ui = "_connected_geometry_object_type_mesh"
     obj.mesh_type_ui = "_connected_geometry_mesh_type_plane"
     obj.plane_type_ui = "_connected_geometry_plane_type_portal"
-    obj.plane_type_ui = "_connected_geometry_portal_type_two_way"
-
+    obj.portal_type_ui = "_connected_geometry_portal_type_two_way"
+    
     for f in flags: setattr(obj, f, False)
 
 
@@ -27,14 +27,17 @@ def transfer_material_flags(material, obj):
     if material.portal_vis_blocker:
         obj.portal_type_ui = "_connected_geometry_portal_type_no_way"
     
-    for a, b in dictionary.items():
-        setattr(obj, a, getattr(obj, b))
+    for p, f in dictionary.items():
+        setattr(obj, p, getattr(material, f))
 
 
 def set_object_properties(obj):
+    
+    if not obj.get("nwo"): return
 
     set_default_values(obj.nwo)
 
     for slot in obj.material_slots:
-        if slot.material.get("ass_jms"):
+        if slot.material.name.startswith("+portal"):
+            if not slot.material.get("ass_jms"): continue
             transfer_material_flags(slot.material.ass_jms, obj.nwo)
