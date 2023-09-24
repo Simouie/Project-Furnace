@@ -1,9 +1,33 @@
 import bpy
 
 
+def separate_by_selection():
+
+    # do not try to use this outside of Edit Mode
+    # some of the geometry should be already selected
+
+    if bpy.context.mode != "EDIT_MESH": return
+
+    # try to separate selected geometry
+
+    try: 
+
+        # separate already selected geometry and put that in a new object
+        # the operator raises an exception if nothing was actually selected
+
+        bpy.ops.mesh.separate(type="SELECTED")
+
+    except: 
+
+        # someone out there who worked on this thing for Blender actually thought
+        # raising an exception is both necessary and better than failing gracefully
+
+        print("bruh")
+
+
 def separate_by_material(obj):
 
-    # abort if object is not mesh
+    # do not continue if the object is not a mesh
 
     if obj.type != "MESH": return
 
@@ -12,9 +36,9 @@ def separate_by_material(obj):
     if bpy.context.mode != "OBJECT":
         bpy.ops.object.mode_set(mode="OBJECT")
 
-    # reset selection before going to the next step
-
     objects = bpy.context.view_layer.objects
+
+    # reset selection before going to the next step
 
     bpy.ops.object.select_all(action="DESELECT")
     objects.active = None
@@ -28,8 +52,34 @@ def separate_by_material(obj):
 
     bpy.ops.object.mode_set(mode="EDIT")
 
-    # separate mesh by material as objects
-    # each object should have one material
+    # separate geometry for portals from everything else
+
+    for index, slot in enumerate(obj.material_slots):
+
+        # do not continue if there is no material in the material slot
+        # do not continue if the material is not a material for Halo
+
+        if not slot.material: continue
+        if not slot.material.get("ass_jms"): continue
+
+        # exclude geometry for portals
+
+        if "+portal" in slot.material.name: continue
+
+        # directly setting the active material seems to be incorrect
+        # selecting material in user interface changes the active material index
+        # setting the index seems to be the correct way to set the active material
+
+        obj.active_material_index = index
+        bpy.ops.object.material_slot_select()
+    
+    separate_by_selection()
+
+    # reset selection before moving on
+
+    bpy.ops.mesh.select_all(action="DESELECT")
+
+    # separate everything else by material
 
     bpy.ops.mesh.separate(type="MATERIAL")
 
@@ -47,7 +97,6 @@ def set_default_values(obj):
 
     flags= [ "portal_ai_deafening_ui", "portal_blocks_sounds_ui", "portal_is_door_ui" ]
 
-    obj.object_type_ui = "_connected_geometry_object_type_mesh"
     obj.mesh_type_ui = "_connected_geometry_mesh_type_plane"
     obj.plane_type_ui = "_connected_geometry_plane_type_portal"
     obj.portal_type_ui = "_connected_geometry_portal_type_two_way"
@@ -78,7 +127,7 @@ def set_object_properties(obj):
     # check if the object has properties set up and used by Foundry
     # do not proceed if they are not there for whatever reason
     
-    if not obj.get("nwo"): return
+    if not obj.get("nwo") and not obj.nwo: return
 
     # do not continue if there are no materials 
     # there is nothing to do if there are no materials
