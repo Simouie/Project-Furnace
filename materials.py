@@ -151,18 +151,37 @@ def transfer_material_flags(material):
 
 def set_face_properties(obj):
 
-    # to avoid having many duplicates
-    # remove existing face properties
+    # check if the object has properties set up and used by Foundry
+    # do not proceed if they are not there for whatever reason
 
-    obj.data.nwo.face_props.clear()
+    # check if the object has attributes set up and used by Foundry
+    # there is nothing to do if those are not there for whatever reason
 
-    # switch to Object Mode if already in another mode
+    try:
 
-    objects = bpy.context.view_layer.objects
+        # assume the attribute exists and try to access it to verify its existence
+        # try to allow the program to continue if doing this leads to an exception
+
+        if obj.nwo:
+            return True
+
+    except:
+
+        print("ERROR: please go ensure that Foundry is installed")
+        return False
+
+    # to prevent accumulation of duplicates during testing
+    # remove all existing face properties
+
+    # obj.data.nwo.face_props.clear()
+
+    # switch to Object Mode if not already in that mode
 
     if bpy.context.mode != "OBJECT":
         bpy.ops.object.mode_set(mode="OBJECT")
 
+    objects = bpy.context.view_layer.objects
+    
     # reset selection before moving on
 
     bpy.ops.object.select_all(action="DESELECT")
@@ -188,9 +207,14 @@ def set_face_properties(obj):
         obj.active_material_index = index
         bpy.ops.object.material_slot_select()
 
-        # transfer as much as possible from materials set up for Halo 
+        # do not continue if there is no material in the material slot
+        # do not continue if the material is not a material for Halo
 
+        if not slot.material: continue
         if not slot.material.get("ass_jms"): continue
+
+        # set up face properties without interacting with the Foundry UI
+        # the process may be rather slow because it does rely on operators
 
         transfer_material_flags(slot.material.ass_jms)
         transfer_lightmap_resolution_properties(slot.material.ass_jms, obj.data.nwo)

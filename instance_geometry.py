@@ -3,10 +3,21 @@ import bpy
 
 def is_instance_geometry(obj, prefix="%"):
 
-    # check if the object has properties set up and used by Foundry
+    # check if the object has attributes set up and used by Foundry
     # there is nothing to do if those are not there for whatever reason
 
-    if not obj.nwo: return False
+    try:
+
+        # assume the attribute exists and try to access it to verify its existence
+        # try to allow the program to continue if doing this leads to an exception
+
+        if obj.nwo:
+            return True
+
+    except:
+
+        print("ERROR: please go ensure that Foundry is installed")
+        return False
 
     # check if the object is intended to be instance geometry for Halo
     # the name of the object should have the symbol % at the beginning
@@ -24,13 +35,7 @@ def is_instance_geometry(obj, prefix="%"):
     return True
 
 
-def set_face_properties(obj):
-
-    print("finish this thing ya loser")
-    return
-
-
-def parse_symbols(name, obj):
+def parse_object_name(name, obj):
 
     # check the name for special symbols
     # change the object properties according to those symbols
@@ -89,7 +94,7 @@ def set_default_values(obj):
     for f in flags: setattr(obj, f, False)
 
 
-def set_object_properties(obj): 
+def set_object_properties(obj):
 
     # directly set values for the object properties needed for instance geometry
     # without actually interacting with Foundry UI in the same way that users do
@@ -102,4 +107,4 @@ def set_object_properties(obj):
     # check the name for any symbols that have special meaning for instance geometry
     # change the object properties according to the special meaning of the symbols
 
-    parse_symbols(obj.name, obj.nwo)
+    parse_object_name(obj.name, obj.nwo)
