@@ -9,10 +9,9 @@ def is_instance_geometry(obj, prefix="%"):
     try:
 
         # assume the attribute exists and try to access it to verify its existence
-        # try to allow the program to continue if doing this leads to an exception
+        # try to continue if doing this leads to an exception
 
-        if obj.nwo:
-            return True
+        if not obj.get("nwo") and not obj.nwo: return False
 
     except:
 

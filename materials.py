@@ -154,21 +154,17 @@ def set_face_properties(obj):
     # check if the object has properties set up and used by Foundry
     # do not proceed if they are not there for whatever reason
 
-    # check if the object has attributes set up and used by Foundry
-    # there is nothing to do if those are not there for whatever reason
-
     try:
 
         # assume the attribute exists and try to access it to verify its existence
-        # try to allow the program to continue if doing this leads to an exception
+        # try to continue if doing this leads to an exception
 
-        if obj.nwo:
-            return True
+        if not obj.get("nwo") and not obj.nwo: return
 
     except:
 
         print("ERROR: please go ensure that Foundry is installed")
-        return False
+        return
 
     # to prevent accumulation of duplicates during testing
     # remove all existing face properties
