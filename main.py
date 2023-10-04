@@ -31,69 +31,19 @@ class THREACH_main(Operator):
     bl_label = "Prepare H3 BSP for import to Reach"
 
 
-    def enter_object_mode(self):
+    def select_none(self):
 
-        # return to Object Mode
-
-        bpy.ops.object.mode_set(mode="OBJECT")
-
-        # reset selection before moving on
-
-        bpy.ops.object.select_all(action="DESELECT")
-        bpy.context.view_layer.objects.active = None
-
-
-    def enter_edit_mode(self, obj):
-
-        # switch to Object Mode if not already in that mode
-
-        if bpy.context.mode != "OBJECT": 
+        if bpy.context.mode != "OBJECT":
             bpy.ops.object.mode_set(mode="OBJECT")
-        
-        # reset selection before moving on
 
         bpy.ops.object.select_all(action="DESELECT")
         bpy.context.view_layer.objects.active = None
 
-        # select object as active object
 
-        obj.select_set(True)
-        bpy.context.view_layer.objects.active = obj
+    def select_object(self, obj):
 
-        # switch to Edit Mode to set up face properties
-
-        bpy.ops.object.mode_set(mode="EDIT")
-
-
-    def process(self, obj):
-
-        # enter Edit Mode to do various things with the geometry
-        # return to Object Mode after that stuff gets done
-
-        self.enter_edit_mode(obj)
-
-        materials.set_face_properties(obj)
-        portals.set_object_properties(obj)
-
-        self.enter_object_mode()
-
-        if instance_geometry.is_instance_geometry(obj):
-            instance_geometry.set_object_properties(obj)
-
-    
-    def prepare(self, obj):
-
-        # set the mesh type to the default mesh type for scenarios
-        # assuming the current mesh type may not be correct 
-
-        obj.nwo.mesh_type_ui = bpy.data.scenes["Scene"].nwo.default_mesh_type_ui
-
-        # reset selection before moving on
-
-        bpy.ops.object.select_all(action="DESELECT")
-        bpy.context.view_layer.objects.active = None
-
-        # select object as active object
+        if bpy.context.mode != "OBJECT":
+            bpy.ops.object.mode_set(mode="OBJECT")
 
         obj.select_set(True)
         bpy.context.view_layer.objects.active = obj
@@ -121,12 +71,50 @@ class THREACH_main(Operator):
         return True
     
 
-    def execute(self, context):
+    def prepare_scene(self):
 
         # directly change the asset type to the correct type
         # without actually interacting with the Foundry UI
 
         bpy.data.scenes["Scene"].nwo.asset_type = "SCENARIO"
+
+        # ensure the data of all objects are independent of each other
+
+        bpy.ops.object.make_single_user(type="ALL", obdata=True)
+
+        # geometry for portals might be part of any object
+        # that means all the objects need to be examined
+
+        for obj in bpy.data.objects:
+
+            # do not go beyond this point if
+            # this object is not for setting up portals
+
+            if not portals.for_portals(obj): continue
+
+            # switch to Edit Mode to work with the geometry
+            # return to Object Mode for the next step
+
+            self.select_none()
+            self.select_object(obj)
+            bpy.ops.object.mode_set(mode="EDIT")
+
+            portals.separate_by_material(obj)
+
+            bpy.ops.object.mode_set(mode="OBJECT")
+
+            # when working with the materials of objects
+            # unused material slots can lead to problems
+            
+            bpy.ops.object.material_slot_remove_unused()
+
+
+    def execute(self, context):
+
+        # to avoid some strange problems and quirks
+        # there are a number of things that need to be done first
+
+        self.prepare_scene()
 
         # for each object in the scene
         # set up object properties and face properties
@@ -140,8 +128,22 @@ class THREACH_main(Operator):
 
             if not self.is_valid(obj): continue
 
-            self.prepare(obj)
-            self.process(obj)
+            # enter Edit Mode to set up face properties
+            # return to Object Mode for the next step
+
+            self.select_none()
+            self.select_object(obj)
+            bpy.ops.object.mode_set(mode="EDIT")
+
+            materials.set_face_properties(obj)
+
+            bpy.ops.object.mode_set(mode="OBJECT")
+            
+            if portals.for_portals(obj):
+                portals.set_object_properties(obj)
+
+            if instance_geometry.for_instance_geometry(obj):
+                instance_geometry.set_object_properties(obj)
 
         return {"FINISHED"}
 

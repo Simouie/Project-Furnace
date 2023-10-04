@@ -1,7 +1,7 @@
 import bpy
 
 
-def is_instance_geometry(obj, prefix="%"):
+def for_instance_geometry(obj, prefix="%"):
 
     # check if the object is intended to be instance geometry for Halo
     # the name of the object should start with the symbol % in most situations

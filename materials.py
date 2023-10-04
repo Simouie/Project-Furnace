@@ -166,8 +166,8 @@ def set_face_properties(obj):
         obj.active_material_index = index
         bpy.ops.object.material_slot_select()
 
-        # skip to next slot if 
-        # there is no material in the material slot
+        # go to the next slot if
+        # the slot has no material
         # the material is not a material for Halo
 
         if not slot.material: continue
