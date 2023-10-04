@@ -3,23 +3,8 @@ import bpy
 
 def is_instance_geometry(obj, prefix="%"):
 
-    # check if the object has attributes set up and used by Foundry
-    # there is nothing to do if those are not there for whatever reason
-
-    try:
-
-        # assume the attribute exists and try to access it to verify its existence
-        # try to continue if doing this leads to an exception
-
-        if not obj.get("nwo") and not obj.nwo: return False
-
-    except:
-
-        print("ERROR: please go ensure that Foundry is installed")
-        return False
-
     # check if the object is intended to be instance geometry for Halo
-    # the name of the object should have the symbol % at the beginning
+    # the name of the object should start with the symbol % in most situations
 
     if not obj.name.startswith(prefix): return False
 
@@ -75,24 +60,6 @@ def parse_object_name(name, obj):
                 obj.decal_offset_ui = True
 
 
-def set_default_values(obj):
-
-    flags = [ 
-        "poop_render_only_ui", 
-        "poop_chops_portals_ui", 
-        "poop_does_not_block_aoe_ui", 
-        "poop_excluded_from_lightprobe_ui", 
-        "decal_offset_ui" 
-    ]
-
-    obj.object_type_ui = "_connected_geometry_object_type_mesh"
-    obj.mesh_type_ui = "_connected_geometry_mesh_type_poop"
-    obj.poop_lighting_ui = "_connected_geometry_poop_lighting_default"
-    obj.poop_pathfinding_ui = "_connected_poop_instance_pathfinding_policy_cutout"
-
-    for f in flags: setattr(obj, f, False)
-
-
 def set_object_properties(obj):
 
     # directly set values for the object properties needed for instance geometry
@@ -101,7 +68,9 @@ def set_object_properties(obj):
     # the default values being used here were determined mostly by guessing
     # they should work to some degree for most types of instance geometry
 
-    set_default_values(obj.nwo)
+    obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_poop"
+    obj.nwo.poop_lighting_ui = "_connected_geometry_poop_lighting_default"
+    obj.nwo.poop_pathfinding_ui = "_connected_poop_instance_pathfinding_policy_cutout"
 
     # check the name for any symbols that have special meaning for instance geometry
     # change the object properties according to the special meaning of the symbols

@@ -3,8 +3,8 @@ import bpy
 
 def separate_by_selection():
 
-    # do not try to use this outside of Edit Mode
-    # some of the geometry should be already selected
+    # do not try to use this outside Edit Mode
+    # geometry that uses the given material should be selected
 
     if bpy.context.mode != "EDIT_MESH": return
 
@@ -27,44 +27,23 @@ def separate_by_selection():
 
 def separate_by_material(obj):
 
-    # do not continue if the object is not a mesh
+    # do not try to use this outside Edit Mode
 
-    if obj.type != "MESH": return
-
-    # switch to Object Mode if not already in that mode
-
-    if bpy.context.mode != "OBJECT":
-        bpy.ops.object.mode_set(mode="OBJECT")
-
-    objects = bpy.context.view_layer.objects
-
-    # reset selection before going to the next step
-
-    bpy.ops.object.select_all(action="DESELECT")
-    objects.active = None
-
-    # select specified object as active object
-
-    obj.select_set(True)
-    objects.active = obj
-
-    # switch to Edit Mode to edit mesh
-
-    bpy.ops.object.mode_set(mode="EDIT")
+    if bpy.context.mode != "EDIT_MESH": return
 
     # separate geometry for portals from everything else
 
     for index, slot in enumerate(obj.material_slots):
 
-        # do not continue if there is no material in the material slot
-        # do not continue if the material is not a material for Halo
+        # go to the next slot if there is no material in the material slot
+        # go to the next slot if the material is not a material for Halo
 
         if not slot.material: continue
         if not slot.material.get("ass_jms"): continue
 
         # exclude geometry for portals
 
-        if "+portal" in slot.material.name: continue
+        if not slot.material.name.startswith("+portal"): continue
 
         # directly setting the active material seems to be incorrect
         # selecting material in user interface changes the active material index
@@ -82,26 +61,6 @@ def separate_by_material(obj):
     # separate everything else by material
 
     bpy.ops.mesh.separate(type="MATERIAL")
-
-    # return to Object Mode before moving on
-
-    bpy.ops.object.mode_set(mode="OBJECT")
-
-    # reset selection before leaving the current context
-
-    bpy.ops.object.select_all(action="DESELECT")
-    objects.active = None
-
-
-def set_default_values(obj):
-
-    flags= [ "portal_ai_deafening_ui", "portal_blocks_sounds_ui", "portal_is_door_ui" ]
-
-    obj.mesh_type_ui = "_connected_geometry_mesh_type_plane"
-    obj.plane_type_ui = "_connected_geometry_plane_type_portal"
-    obj.portal_type_ui = "_connected_geometry_portal_type_two_way"
-    
-    for f in flags: setattr(obj, f, False)
 
 
 def transfer_material_flags(material, obj):
@@ -124,13 +83,8 @@ def transfer_material_flags(material, obj):
 
 def set_object_properties(obj):
 
-    # check if the object has properties set up and used by Foundry
-    # do not proceed if they are not there for whatever reason
-    
-    if not obj.get("nwo") and not obj.nwo: return
-
-    # do not continue if there are no materials 
-    # there is nothing to do if there are no materials
+    # do not continue if there are no materials
+    # nothing can be done if there are no materials
 
     # if there are multiple materials
     # assume they are for creating different types of portals
@@ -141,20 +95,30 @@ def set_object_properties(obj):
     if n < 1: return
     if n > 1: separate_by_material(obj)
 
-    # do not continue if the material is not intended for portals
-    # do not continue if the material lacks the needed attributes
+    # the remaining geometry should be geometry for one type of portal
+    # check all material slots because there might be unused materials
 
-    material = obj.material_slots[0].material
+    for slot in obj.material_slots:
 
-    if not material.name.startswith("+portal"): return
-    if not material.get("ass_jms"): return
+        # skip to the next slot if there is no material in the material slot
 
-    # directly set values for object properties that are needed for portals
-    # without actually interacting with Foundry UI in the same way that users do
+        if not slot.material: continue
+        
+        # skip to the next slot if
+        # the material is not a material for Halo
+        # the material is not for portals in Halo
+        
+        if not slot.material.get("ass_jms"): continue
+        if not slot.material.name.startswith("+portal"): continue
 
-    set_default_values(obj.nwo)
+        # directly set values for object properties that are needed for portals
+        # without interacting with the Foundry UI in the same way that users do
 
-    # transfer flags used for materials in Halo to object properties
-    # most flags do not apply to portals but some of them are for portals
+        obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_plane"
+        obj.nwo.plane_type_ui = "_connected_geometry_plane_type_portal"
+        obj.nwo.portal_type_ui = "_connected_geometry_portal_type_two_way"
 
-    transfer_material_flags(material.ass_jms, obj.nwo)
+        # transfer flags used for materials in Halo to object properties
+        # most flags do not apply to portals but some of them are for portals
+
+        transfer_material_flags(slot.material.ass_jms, obj.nwo)

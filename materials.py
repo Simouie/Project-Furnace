@@ -3,13 +3,13 @@ import bpy
 
 def transfer_lightmap_properties(material, mesh):
 
-    # this is not intended to be used outside of Edit Mode
+    # do not try to use this outside Edit Mode
     # geometry that uses the given material should be selected
 
     if bpy.context.mode != "EDIT_MESH": return
 
     # not all materials for Halo need to have lightmap properties
-    # do the following only if the power was set to be greater than the default value 0
+    # do the following only if the power was not set to the default value
 
     if material.power > 0:
 
@@ -43,7 +43,7 @@ def transfer_lightmap_properties(material, mesh):
 
 def transfer_lightmap_resolution_properties(material, mesh):
 
-    # this is not intended to be used outside of Edit Mode
+    # do not try to use this outside Edit Mode
     # geometry that uses the given material should be selected
 
     if bpy.context.mode != "EDIT_MESH": return
@@ -82,7 +82,7 @@ def transfer_lightmap_resolution_properties(material, mesh):
 
 def transfer_material_flags(material):
 
-    # this is not intended to be used outside of Edit Mode
+    # do not try to use this outside Edit Mode
     # geometry that uses the given material should be selected
 
     if bpy.context.mode != "EDIT_MESH": return
@@ -151,46 +151,9 @@ def transfer_material_flags(material):
 
 def set_face_properties(obj):
 
-    # check if the object has properties set up and used by Foundry
-    # do not proceed if they are not there for whatever reason
+    # do not try to use this outside Edit Mode
 
-    try:
-
-        # assume the attribute exists and try to access it to verify its existence
-        # try to continue if doing this leads to an exception
-
-        if not obj.get("nwo") and not obj.nwo: return
-
-    except:
-
-        print("ERROR: please go ensure that Foundry is installed")
-        return
-
-    # to prevent accumulation of duplicates during testing
-    # remove all existing face properties
-
-    # obj.data.nwo.face_props.clear()
-
-    # switch to Object Mode if not already in that mode
-
-    if bpy.context.mode != "OBJECT":
-        bpy.ops.object.mode_set(mode="OBJECT")
-
-    objects = bpy.context.view_layer.objects
-    
-    # reset selection before moving on
-
-    bpy.ops.object.select_all(action="DESELECT")
-    objects.active = None
-
-    # select object as active object
-
-    obj.select_set(True)
-    objects.active = obj
-
-    # switch to Edit Mode to set face properties
-
-    bpy.ops.object.mode_set(mode="EDIT")
+    if bpy.context.mode != "EDIT_MESH": return
 
     # set up face properties for each material
 
@@ -203,8 +166,9 @@ def set_face_properties(obj):
         obj.active_material_index = index
         bpy.ops.object.material_slot_select()
 
-        # do not continue if there is no material in the material slot
-        # do not continue if the material is not a material for Halo
+        # skip to next slot if 
+        # there is no material in the material slot
+        # the material is not a material for Halo
 
         if not slot.material: continue
         if not slot.material.get("ass_jms"): continue
@@ -219,12 +183,3 @@ def set_face_properties(obj):
         # reset selection before moving on
 
         bpy.ops.mesh.select_all(action="DESELECT")
-
-    # return to Object Mode
-
-    bpy.ops.object.mode_set(mode="OBJECT")
-
-    # reset selection before moving on
-
-    bpy.ops.object.select_all(action="DESELECT")
-    objects.active = None
