@@ -1,4 +1,4 @@
-import bpy 
+import bpy
 
 
 def transfer_lightmap_properties(material, mesh):
@@ -149,6 +149,38 @@ def transfer_material_flags(material):
     # if material.group_transparents_by_plane:
 
 
+def add_seam_sealer(mesh):
+    
+    # do not try to use this outside Edit Mode
+    # geometry that uses the given material should be selected
+
+    if bpy.context.mode != "EDIT_MESH": return
+
+    bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_type_seam_sealer")
+    return
+
+
+def add_sky(material, mesh):
+
+    # do not try to use this outside Edit Mode
+    # geometry that uses the given material should be selected
+
+    if bpy.context.mode != "EDIT_MESH": return
+
+    bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_type_sky")
+
+    index = material.name.split("+sky")[1]
+    index = index.split(".")[0]
+
+    if len(index.strip()) < 1: return
+
+    for c in index:
+        if c not in "1234567890": return
+
+    mesh.face_props[-1].sky_permutation_index_ui = int(index)
+    return
+    
+
 def set_face_properties(obj):
 
     # do not try to use this outside Edit Mode
@@ -172,6 +204,17 @@ def set_face_properties(obj):
 
         if not slot.material: continue
         if not slot.material.get("ass_jms"): continue
+
+        # some materials are for special and specific uses
+        # such materials need to be processed in a different way
+
+        if slot.material.name.startswith("+sky"):
+            add_sky(slot.material, obj.data.nwo)
+            continue
+
+        if slot.material.name.startswith("+seamsealer"):
+            add_seam_sealer(obj.data.nwo)
+            continue
 
         # set up face properties without interacting with the Foundry UI
         # the process may be rather slow because it does rely on operators
