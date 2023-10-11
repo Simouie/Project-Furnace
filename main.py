@@ -13,7 +13,7 @@ class THREACH_PT_panel(Panel):
     bl_region_type = "UI"
 
     bl_category = "Foundry"
-    bl_label = "Halo 3 BSP"
+    bl_label = "Halo 3 ASS"
 
     bl_options = {"DEFAULT_CLOSED"}
 
@@ -25,10 +25,10 @@ class THREACH_PT_panel(Panel):
 
 class THREACH_main(Operator):
 
-    """Prepare H3 BSP for import to Reach"""
+    """Prepare H3 ASS for import to Reach"""
 
     bl_idname = "threach.main"
-    bl_label = "Prepare H3 BSP for import to Reach"
+    bl_label = "Prepare H3 ASS for import to Reach"
 
 
     def select_none(self):
@@ -51,6 +51,11 @@ class THREACH_main(Operator):
 
     def is_valid(self, obj): 
 
+        # if the object is hidden for some reason
+        # the object probably should be ignored
+
+        if obj.hide_get(): return False
+
         # verify that the object has properties set up and used by Foundry
         # nothing can be done if those are not there for whatever reason
 
@@ -65,8 +70,12 @@ class THREACH_main(Operator):
 
             print("ERROR: Please go ensure that Foundry is installed")
             return False
+        
+        # ignore objects that seem to be of the wrong type
 
         if obj.type != "MESH": return False
+
+        # the object meets all the requirements
         
         return True
     
@@ -87,7 +96,12 @@ class THREACH_main(Operator):
 
         for obj in bpy.data.objects:
 
-            # do not go beyond this point if
+            # this project is intended to work with meshes and with Foundry
+            # skip to the next object if this object fails to meet the requirements
+
+            if not self.is_valid(obj): continue
+
+            # stop and go to the next object if
             # this object is not for setting up portals
 
             if not portals.for_portals(obj): continue
