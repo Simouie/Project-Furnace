@@ -26,6 +26,11 @@ def parse_object_name(name, obj):
 
     for c in name: 
 
+        # special symbols should be placed before the actual name
+        # do not continue if this character is a letter or a number
+
+        if c.isalnum(): return
+
         # there are a number of symbols that can be used for instance geometry
         # many of the symbols affect interaction with other things in Halo
         # some of them are simply for adjusting lighting and pathfinding
