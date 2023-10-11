@@ -2,9 +2,9 @@ bl_info = {
     "name": "THREACH",
     "description": "",
     "author": "AI (Abstract Ingenuity)",
-    "version": (0, 0, 0),
+    "version": (0, 5, 0),
     "blender": (3, 6, 1),
-    "location": "Sidebar > Foundry",
+    "location": "Sidebar > Foundry > Halo 3 ASS",
     "support": 'COMMUNITY',
     "category": "Scene"
 }
