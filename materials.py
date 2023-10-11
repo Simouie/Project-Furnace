@@ -98,7 +98,9 @@ def transfer_material_flags(material):
         bpy.ops.nwo.face_layer_add(options="two_sided")
 
     # if material.transparent_1_sided:
-    # if material.transparent_2_sided: 
+
+    if material.transparent_2_sided:
+        bpy.ops.nwo.face_layer_add(options="two_sided")
 
     if material.render_only:
         bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_mode_render_only")
@@ -135,6 +137,7 @@ def transfer_material_flags(material):
     # if material.portal_1_way:
     # if material.portal_door:
     # if material.portal_vis_blocker:
+    # if material.dislike_photons:
     # if material.ignored_by_lightmaps:
     # if material.blocks_sound:
 
@@ -147,6 +150,99 @@ def transfer_material_flags(material):
         bpy.ops.nwo.face_layer_add_flags(options="slip_surface")
 
     # if material.group_transparents_by_plane:
+
+
+def parse_material_name(name, material):
+
+    # check the name of the material for any special symbols
+    # enable the corresponding flag for the material
+
+    for c in name: 
+
+        # special symbols should be placed before or after the actual name
+        # do not continue if this character is a letter or a number
+
+        if c.isalnum(): return
+
+        # many of these can be used for almost anything within a level
+        # some of them are intended only for special types of geometry
+
+        match c:
+
+            case "%": 
+                material.two_sided = True
+                
+            case "#": 
+                material.transparent_1_sided = True
+                
+            case "?": 
+                material.transparent_2_sided = True
+                
+            case "!": 
+                material.render_only = True
+                
+            case "@": 
+                material.collision_only = True
+                
+            case "*": 
+                material.sphere_collision_only = True
+                
+            case "$": 
+                material.fog_plane = True
+                
+            case "^": 
+                material.ladder = True
+                
+            case "-": 
+                material.breakable = True
+                
+            case "&": 
+                material.ai_deafening = True
+                
+            case "=": 
+                material.no_shadow = True
+                
+            case ".": 
+                material.shadow_only = True
+                
+            case ";": 
+                material.lightmap_only = True
+                
+            case ")": 
+                material.precise = True
+                
+            case ">": 
+                material.conveyor = True
+                
+            case "<": 
+                material.portal_1_way = True
+                
+            case "|": 
+                material.portal_door = True
+                
+            case "~": 
+                material.portal_vis_blocker = True
+                
+            case "(": 
+                material.dislike_photons = True
+                
+            case "{": 
+                material.ignored_by_lightmaps = True
+                
+            case "}": 
+                material.blocks_sound = True
+                
+            case "[": 
+                material.decal_offset = True
+                
+            case "'": 
+                material.water_surface = True
+                
+            case "0": 
+                material.slip_surface = True
+                
+            case "]": 
+                material.group_transparents_by_plane = True
 
 
 def add_seam_sealer(mesh):
@@ -163,7 +259,7 @@ def add_seam_sealer(mesh):
 def add_sky(material, mesh):
 
     # do not try to use this outside Edit Mode
-    # geometry that uses the given material should be selected
+    # some geometry should be already selected
 
     if bpy.context.mode != "EDIT_MESH": return
 
@@ -191,12 +287,10 @@ def set_face_properties(obj):
 
     for index, slot in enumerate(obj.material_slots):
 
-        # directly setting the active material seems to be incorrect
-        # selecting material in user interface changes the active material index
-        # setting the index seems to be the correct way to set the active material
+        # to help avoid having problems while working with the material and its data
+        # ensure the properties of materials for Halo are enabled before moving on
 
-        obj.active_material_index = index
-        bpy.ops.object.material_slot_select()
+        slot.material.ass_jms.is_bm = True
 
         # go to the next slot if
         # the slot has no material
@@ -205,7 +299,21 @@ def set_face_properties(obj):
         if not slot.material: continue
         if not slot.material.get("ass_jms"): continue
 
-        # some materials are for special and specific uses
+        # enable any flags that should be enabled
+
+        names = [ slot.material.name, reversed(slot.material.name) ]
+
+        for name in names:
+            parse_material_name(name, slot.material.ass_jms)
+
+        # directly setting the active material seems to be incorrect
+        # selecting material in user interface changes the active material index
+        # setting the index seems to be the correct way to set the active material
+
+        obj.active_material_index = index
+        bpy.ops.object.material_slot_select()
+
+        # some materials are for specific and special uses
         # such materials need to be processed in a different way
 
         if slot.material.name.startswith("+sky"):
@@ -216,8 +324,7 @@ def set_face_properties(obj):
             add_seam_sealer(obj.data.nwo)
             continue
 
-        # set up face properties without interacting with the Foundry UI
-        # the process may be rather slow because it does rely on operators
+        # add and modify face properties according to the material
 
         transfer_material_flags(slot.material.ass_jms)
         transfer_lightmap_resolution_properties(slot.material.ass_jms, obj.data.nwo)
