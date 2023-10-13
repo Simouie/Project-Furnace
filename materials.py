@@ -252,8 +252,10 @@ def add_seam_sealer(mesh):
 
     if bpy.context.mode != "EDIT_MESH": return
 
+    # levels in Halo should not have gaps or holes in its geometry
+    # this material is for geometry that seals up those openings
+
     bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_type_seam_sealer")
-    return
 
 
 def add_sky(material, mesh):
@@ -263,20 +265,27 @@ def add_sky(material, mesh):
 
     if bpy.context.mode != "EDIT_MESH": return
 
+    # the sky is usually not part of the level
+    # geometry that uses this special material will be invisible
+    # this allows the sky to be seen through those parts of the level
+
     bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_type_sky")
+
+    # levels in Halo can reference and use more than one sky
+    # materials used to show the sky should have a number at the end of the name
+    # that number corresponds to the index of a sky referenced by the level
 
     index = material.name.split("+sky")[1]
     index = index.split(".")[0]
 
-    if len(index.strip()) < 1: return
+    if len(index.strip()) <= 0: return
 
     for c in index:
         if c not in "1234567890": return
 
     mesh.face_props[-1].sky_permutation_index_ui = int(index)
-    return
-    
 
+    
 def set_face_properties(obj):
 
     # do not try to use this outside Edit Mode
