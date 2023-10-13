@@ -285,7 +285,7 @@ def add_sky(material, mesh):
 
     mesh.face_props[-1].sky_permutation_index_ui = int(index)
 
-    
+
 def set_face_properties(obj):
 
     # do not try to use this outside Edit Mode
@@ -296,11 +296,11 @@ def set_face_properties(obj):
 
     for index, slot in enumerate(obj.material_slots):
 
-        # to help avoid having problems while working with the material and its data
-        # ensure the properties of materials for Halo are enabled before moving on
+        # some of the geometry might be selected upon entering Edit Mode
+        # reset selection before moving on
 
-        slot.material.ass_jms.is_bm = True
-
+        bpy.ops.mesh.select_all(action="DESELECT")
+        
         # go to the next slot if
         # the slot has no material
         # the material is not a material for Halo
