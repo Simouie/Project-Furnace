@@ -67,17 +67,22 @@ def parse_object_name(name, obj):
 
 def set_object_properties(obj):
 
-    # directly set values for the object properties needed for instance geometry
+    # directly set the object properties needed for instance geometry
     # without actually interacting with Foundry UI in the same way that users do
 
-    # the default values being used here were determined mostly by guessing
-    # they should work to some degree for most types of instance geometry
+    # the values being used here as the default were determined mostly by guessing
+    # they should lead to acceptable results in most situations
 
-    obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_poop"
-    obj.nwo.poop_lighting_ui = "_connected_geometry_poop_lighting_default"
-    obj.nwo.poop_pathfinding_ui = "_connected_poop_instance_pathfinding_policy_cutout"
+    # there is no reason to have a conditional statement here
+    # but having that somehow allows the mesh type to be reliably updated
 
-    # check the name for any symbols that have special meaning for instance geometry
-    # change the object properties according to the special meaning of the symbols
+    if obj.nwo.mesh_type_ui:
+        obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_poop"
+        obj.nwo.poop_lighting_ui = "_connected_geometry_poop_lighting_default"
+        obj.nwo.poop_pathfinding_ui = "_connected_poop_instance_pathfinding_policy_cutout"
+
+    # there are a number of symbols used for applying specific properties to instance geometry
+    # the object properties should be changed accordingly if those are in the name of the object
+    # check the name for special symbols
 
     parse_object_name(obj.name, obj.nwo)

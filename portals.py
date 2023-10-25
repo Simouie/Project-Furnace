@@ -8,9 +8,8 @@ def for_portals(obj):
 
     if not obj.type == "MESH": return False
         
-    # check each of the material slots
-    # if at least one of the slots has an approriately named material
-    # assume the object is intended for setting up portals for Halo
+    # if any of the materials has the appropriate prefix
+    # assume the object is intended for setting up portals
 
     for slot in obj.material_slots:
 
@@ -22,7 +21,7 @@ def for_portals(obj):
         if not slot.material.get("ass_jms"): continue
 
         # if the name of the material has the appropriate prefix
-        # the object is probably for creating up portals in Halo
+        # the object is probably for setting up portals
 
         if slot.material.name.startswith("+portal"): return True
 
@@ -80,6 +79,7 @@ def separate_by_material(obj):
 
         if not slot.material: continue
         if not slot.material.get("ass_jms"): continue
+
         if slot.material.name.startswith("+portal"): continue
 
         # directly setting the active material seems to be incorrect
@@ -120,6 +120,16 @@ def transfer_material_flags(material, obj):
 
 def set_object_properties(obj):
 
+    # directly set object properties that are needed for portals
+    # without interacting with the Foundry UI in the same way that users do
+
+    # there is no reason to have a conditional statement here
+    # but having that somehow allows the mesh type to be reliably updated
+
+    if obj.nwo.mesh_type_ui:
+        obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_portal"
+        obj.nwo.portal_type_ui = "_connected_geometry_portal_type_two_way"
+
     # check all material slots
     # there can be unused material slots
 
@@ -135,13 +145,6 @@ def set_object_properties(obj):
         
         if not slot.material.get("ass_jms"): continue
         if not slot.material.name.startswith("+portal"): continue
-
-        # directly set values for object properties that are needed for portals
-        # without interacting with the Foundry UI in the same way that users do
-
-        obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_plane"
-        obj.nwo.plane_type_ui = "_connected_geometry_plane_type_portal"
-        obj.nwo.portal_type_ui = "_connected_geometry_portal_type_two_way"
 
         # transfer flags used for materials in Halo to object properties
         # most flags do not apply to portals but some of them are for portals

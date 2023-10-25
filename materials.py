@@ -97,10 +97,12 @@ def transfer_material_flags(material):
     if material.two_sided:
         bpy.ops.nwo.face_layer_add(options="two_sided")
 
-    # if material.transparent_1_sided:
+    if material.transparent_1_sided:
+        bpy.ops.nwo.face_layer_add(options="transparent")
 
     if material.transparent_2_sided:
         bpy.ops.nwo.face_layer_add(options="two_sided")
+        bpy.ops.nwo.face_layer_add(options="transparent")
 
     if material.render_only:
         bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_mode_render_only")
