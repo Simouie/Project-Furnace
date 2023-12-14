@@ -3,11 +3,12 @@ import bpy
 from . import instance_geometry
 from . import materials
 from . import portals
+from . import glass
 
 from bpy.types import Operator, Panel
 
 
-class THREACH_PT_panel(Panel):
+class THREACH_PT_Panel(Panel):
 
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -23,7 +24,7 @@ class THREACH_PT_panel(Panel):
         row.operator("threach.main", text="Go")
 
 
-class THREACH_main(Operator):
+class THREACH_Main(Operator):
 
     """Prepare H3 ASS for import to Reach"""
 
@@ -101,24 +102,47 @@ class THREACH_main(Operator):
 
             if not self.is_valid(obj): continue
 
-            # stop and go to the next object if
-            # this object is not for setting up portals
+            # remove unused material slots before moving on
+            
+            bpy.ops.object.material_slot_remove_unused()
 
-            if not portals.for_portals(obj): continue
+            # separate any geometry intended to be glass
+            # two-sided geometry for levels should be separate
 
-            # switch to Edit Mode to work with the geometry
-            # return to Object Mode for the next step
+            if glass.has_glass(obj):
 
-            self.select_none()
-            self.select_object(obj)
-            bpy.ops.object.mode_set(mode="EDIT")
+                # enter Edit Mode to work with the geometry
+                # return to Object Mode for the next step
 
-            portals.separate_by_material(obj)
+                self.select_none()
+                self.select_object(obj)
+                bpy.ops.object.mode_set(mode="EDIT")
 
-            bpy.ops.object.mode_set(mode="OBJECT")
+                glass.separate_by_material(obj)
 
-            # when working with the materials of objects
-            # unused material slots can lead to problems
+                bpy.ops.object.mode_set(mode="OBJECT")
+
+            # remove unused material slots again
+            
+            bpy.ops.object.material_slot_remove_unused()
+
+            # separate any geometry intended for setting up portals
+            # portals are expected to be separate from other geometry
+
+            if portals.for_portals(obj):
+
+                # switch to Edit Mode to work with the geometry
+                # return to Object Mode for the next step
+
+                self.select_none()
+                self.select_object(obj)
+                bpy.ops.object.mode_set(mode="EDIT")
+
+                portals.separate_by_material(obj)
+
+                bpy.ops.object.mode_set(mode="OBJECT")
+
+            # remove unused material slots again
             
             bpy.ops.object.material_slot_remove_unused()
 
@@ -152,7 +176,14 @@ class THREACH_main(Operator):
             materials.set_face_properties(obj)
 
             bpy.ops.object.mode_set(mode="OBJECT")
-            
+
+            # for levels that are originally from Halo 3 and Halo 3: ODST
+            # this is the most appropriate default mesh type
+
+            obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_structure"
+
+            # set the object properties according to the mesh type
+
             if portals.for_portals(obj):
                 portals.set_object_properties(obj)
 
@@ -162,7 +193,7 @@ class THREACH_main(Operator):
         return {"FINISHED"}
 
 
-classes = [ THREACH_PT_panel, THREACH_main ]
+classes = [ THREACH_PT_Panel, THREACH_Main ]
 
 def register():
     for c in classes:
