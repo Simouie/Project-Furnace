@@ -58,7 +58,7 @@ def separate_by_material(obj):
 
     if bpy.context.mode != "EDIT_MESH": return
 
-    # if the object has less than two material
+    # if there are less than two materials
     # there is no need to do anything here
 
     if len(obj.material_slots) < 2: return

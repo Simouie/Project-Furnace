@@ -77,7 +77,7 @@ def set_object_properties(obj):
     # but having that somehow allows the mesh type to be reliably updated
 
     if obj.nwo.mesh_type_ui:
-        obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_poop"
+        obj.nwo.mesh_type_ui = "_connected_geometry_mesh_type_default"
         obj.nwo.poop_lighting_ui = "_connected_geometry_poop_lighting_default"
         obj.nwo.poop_pathfinding_ui = "_connected_poop_instance_pathfinding_policy_cutout"
 

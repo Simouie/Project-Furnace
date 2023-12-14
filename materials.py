@@ -102,35 +102,35 @@ def transfer_material_flags(material):
 
     if material.transparent_2_sided:
         bpy.ops.nwo.face_layer_add(options="two_sided")
-        bpy.ops.nwo.face_layer_add(options="transparent")
+        bpy.ops.nwo.face_prop_add(options="transparent")
 
     if material.render_only:
-        bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_mode_render_only")
+        bpy.ops.nwo.face_layer_add(options="render_only")
 
     if material.collision_only:
-        bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_mode_collision_only")
+        bpy.ops.nwo.face_layer_add(options="collision_only")
 
     if material.sphere_collision_only:
-        bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_mode_sphere_collision_only")
+        bpy.ops.nwo.face_layer_add(options="sphere_collision_only")
 
     # if material.fog_plane:
 
     if material.ladder:
-        bpy.ops.nwo.face_layer_add_flags(options="ladder")
+        bpy.ops.nwo.face_layer_add(options="ladder")
 
     if material.breakable:
-        bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_mode_breakable")
+        bpy.ops.nwo.face_layer_add(options="breakable")
 
     # if material.ai_deafening:
 
     if material.no_shadow:
-        bpy.ops.nwo.face_layer_add_flags(options="no_shadow")
+        bpy.ops.nwo.face_layer_add(options="no_shadow")
 
     if material.shadow_only:
-        bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_mode_shadow_only")
+        bpy.ops.nwo.face_layer_add(options="shadow_only")
 
-    if material.lightmap_only:
-        bpy.ops.nwo.face_layer_add(options="_connected_geometry_face_mode_lightmap_only")
+    # if material.lightmap_only:
+    #     bpy.ops.nwo.face_layer_add(options="lightmap_only")
 
     if material.precise:
         bpy.ops.nwo.face_layer_add(options="precise_position")
@@ -144,12 +144,12 @@ def transfer_material_flags(material):
     # if material.blocks_sound:
 
     if material.decal_offset:
-        bpy.ops.nwo.face_layer_add_flags(options="decal_offset")
+        bpy.ops.nwo.face_layer_add(options="decal_offset")
 
     # if material.water_surface:
 
     if material.slip_surface:
-        bpy.ops.nwo.face_layer_add_flags(options="slip_surface")
+        bpy.ops.nwo.face_layer_add(options="slip_surface")
 
     # if material.group_transparents_by_plane:
 
