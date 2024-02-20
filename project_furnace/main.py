@@ -8,7 +8,7 @@ from . import glass
 from bpy.types import Operator, Panel
 
 
-class THREACH_PT_Panel(Panel):
+class FURNACE_PT_Panel(Panel):
 
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
@@ -21,14 +21,14 @@ class THREACH_PT_Panel(Panel):
 
     def draw(self, context):
         row = self.layout.row()
-        row.operator("threach.main", text="Go")
+        row.operator("FURNACE.main", text="Go")
 
 
-class THREACH_Main(Operator):
+class FURNACE_Main(Operator):
 
     """Prepare H3 ASS for import to Reach"""
 
-    bl_idname = "threach.main"
+    bl_idname = "FURNACE.main"
     bl_label = "Prepare H3 ASS for import to Reach"
 
 
@@ -193,7 +193,7 @@ class THREACH_Main(Operator):
         return {"FINISHED"}
 
 
-classes = [ THREACH_PT_Panel, THREACH_Main ]
+classes = [ FURNACE_PT_Panel, FURNACE_Main ]
 
 def register():
     for c in classes:

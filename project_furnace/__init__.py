@@ -1,8 +1,8 @@
 bl_info = {
-    "name": "THREACH",
+    "name": "FURNACE",
     "description": "",
-    "author": "AI (Abstract Ingenuity)",
-    "version": (0, 9, 2),
+    "author": "Abstract Ingenuity",
+    "version": (0, 9, 3),
     "blender": (3, 6, 1),
     "location": "Sidebar > Foundry > Halo 3 ASS",
     "support": 'COMMUNITY',
